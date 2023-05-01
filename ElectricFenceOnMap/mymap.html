@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css"/>
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=e86d1e0833bfea2abbbe6a4a696b998c"></script>
+    <script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+</head>
+<body>
+<div id="container"></div>
+<script src="qwebchannel.js"></script>
+<script type="text/javascript">
+    var polyline, marker, map = new AMap.Map("container", {
+        resizeEnable: true,
+		zoom:4, //初始化地图层级
+        center: [109.436122,33.155529], //初始化地图中心点
+		//mapStyle: 'amap://styles/5287237df04ff2c5eae2b7915ec98362'
+    });
+    AMap.plugin(["AMap.Autocomplete"], function() {
+        //构造地点查询类
+
+    });
+	
+	window.myChannel = new QWebChannel(qt.webChannelTransport, function (channel) {
+		window.myChannel = channel.objects.qtChannel;
+	});
+	
+	var path = [];
+	/*function setPolygon(coordinates) {
+		var latitude = coordinates.latitude;
+		var longitude = coordinates.longitude;
+		var titl = coordinates.titl;
+		// do something with latitude and longitude
+		setCoordinates(longitude, latitude, titl);
+		
+		path.push([longitude, latitude]);
+		polyline = new AMap.Polyline({
+			path: path,            // 设置线覆盖物路径
+			strokeColor: '#1BAC2E',   // 线颜色
+			strokeOpacity: 1,         // 线透明度
+			strokeWeight: 8,          // 线宽
+			strokeStyle: 'solid',     // 线样式,实线
+			lineJoin: 'round',			//折现拐角绘制样式,圆角
+			lineCap: 'round',			//折现线帽绘制样式,圆角
+			zIndex: 50,					//设置线的层级,级别高的折线显示在上层
+			strokeDasharray: [10, 5], // 补充线样式,在strokeStyle设置为虚线时有效
+			showDir: true				//路径是否显示白色箭头
+		});
+		map.add(polyline);
+	}*/
+	
+	function setPolygon(lon, lat, titl) {
+		var latitude = lat;
+		var longitude = lon;
+		var titl = titl;
+		// do something with latitude and longitude
+		setCoordinates(longitude, latitude, titl);
+		
+		path.push([longitude, latitude]);
+		polyline = new AMap.Polyline({
+			path: path,            // 设置线覆盖物路径
+			strokeColor: '#1BAC2E',   // 线颜色
+			strokeOpacity: 1,         // 线透明度
+			strokeWeight: 8,          // 线宽
+			strokeStyle: 'solid',     // 线样式,实线
+			lineJoin: 'round',			//折现拐角绘制样式,圆角
+			lineCap: 'round',			//折现线帽绘制样式,圆角
+			zIndex: 50,					//设置线的层级,级别高的折线显示在上层
+			strokeDasharray: [10, 5], // 补充线样式,在strokeStyle设置为虚线时有效
+			showDir: true				//路径是否显示白色箭头
+		});
+		map.add(polyline);
+	}
+	
+	function setCoordinates(lon, lat, titl) {
+		var latitude = lat;
+		var longitude = lon;
+		var titl = titl;
+		// do something with latitude and longitude
+		marker = new AMap.Marker({   
+			position:[longitude, latitude],
+		});
+		
+		marker.setMap(map);
+		//map.setZoomAndCenter(20, [longitude, latitude]);
+		map.setCenter([longitude, latitude]);
+		
+		marker.setLabel({
+			offset: new AMap.Pixel(30, 0),  //设置文本标注偏移量
+			content: titl,
+			direction: 'top-center' //设置文本标注方位
+		});
+	}
+	
+	function clearMarker() {
+		// 清除地图上的所有标记点
+		map.clearMap();
+		
+		// 清除路径
+		map.remove(path);
+		path = [];
+	}
+	
+	var status_draw = false;
+	function changeStatus() {
+		status_draw = true;
+	}
+	
+	function getCoordinates(e) {
+		var latitude = e.lnglat.getLat();
+		var longitude = e.lnglat.getLng();
+		var titl = 'c';
+		//console.log("Clicked coordinates: " + latitude + ", " + longitude);
+		if(status_draw == true) {
+			setPolygon(longitude, latitude, titl);
+			window.myChannel.receiveCoordinates_slot(longitude.toString(), latitude.toString());
+		}
+	}
+
+	// 添加事件监听器
+	map.on('click', getCoordinates);
+	
+	
+</script>
+</body>
+</html>
